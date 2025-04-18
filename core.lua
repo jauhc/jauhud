@@ -88,6 +88,9 @@ local function JAUHUD_CleanChat()
 end
 
 local function CosmeticChanges()
+	if _G["CompactPartyFrameTitle"] then
+		_G["CompactPartyFrameTitle"]:SetText(JauhudDB.custom_title or "Partyy")
+	end
 	JAUHUD_CleanChat()
 	CompactPartyFrame:RefreshMembers() -- just for the sake of it
 end

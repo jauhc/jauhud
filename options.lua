@@ -11,7 +11,7 @@ local custom_backdrop = {
 
 JAUHUD_optf = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
 JAUHUD_optf:SetPoint("CENTER")
-local win_width = 250
+local win_width = 190
 JAUHUD_optf:SetSize(win_width,200)
 JAUHUD_optf:SetBackdrop(custom_backdrop) --Blizzard_SharedXML/Backdrop.lua
 JAUHUD_optf:Hide()
@@ -34,8 +34,31 @@ end
 --4 Player Frame
 local opt_list = {}
 function JAUHUD.create_options()
-    local togl_bars = CreateFrame("CheckButton", nil, JAUHUD_optf, "ChatConfigCheckButtonTemplate")
-    togl_bars:SetPoint("TOPLEFT", 10, -5)
+    local pframe = JAUHUD_optf
+    --[[
+    if type(JauhudDB.custom_title) ~= "string" then
+    JauhudDB.custom_title = "Partyy"
+    end
+    local party_text = CreateFrame("EditBox", nil, JAUHUD_optf, "InputBoxTemplate")
+    party_text:SetPoint("TOP", 0, 0)
+    party_text:SetSize(win_width * 0.8, 25)
+    --party_text.Text:SetText("Cleaner tooltips")
+    --party_text:SetText(JauhudDB.custom_title)
+    
+    party_text:HookScript("OnTextChanged", function(self, userInput)
+        JAUHUD.devp("type: " .. type(userInput))
+        if type(userInput) == "string" then
+            JauhudDB.custom_title = userInput
+            _G["CompactPartyFrameTitle"]:SetText(JauhudDB.custom_title)
+        else party_text:SetText("")
+        end
+    end)
+    local pframe = party_text
+    table.insert(opt_list, party_text) -- add ref to table to count for size
+]]
+
+    local togl_bars = CreateFrame("CheckButton", nil, pframe, "ChatConfigCheckButtonTemplate")
+    togl_bars:SetPoint("TOPLEFT", pframe, 10, -5)
     togl_bars.Text:SetText("Solid health bars")
     if JauhudDB.compact_bars then -- no heckin clue why i named it this but here we are
         togl_bars:SetChecked(true)
@@ -44,7 +67,7 @@ function JAUHUD.create_options()
         JauhudDB.compact_bars = self:GetChecked()
         CompactPartyFrame:RefreshMembers() -- works
     end)
-    local pframe = togl_bars
+    pframe = togl_bars
     table.insert(opt_list, togl_bars) -- add ref to table to count for size
 
     --[[
