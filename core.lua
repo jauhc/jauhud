@@ -1,4 +1,3 @@
-
 --[[
 	a lot of stuff here remaining from dev version which
 	shouldnt affect performance, just awful to look at
@@ -90,6 +89,7 @@ end
 
 local function CosmeticChanges()
 	JAUHUD_CleanChat()
+	CompactPartyFrame:RefreshMembers() -- just for the sake of it
 end
 
 local function JAUHUD_init()
@@ -163,8 +163,113 @@ hooksecurefunc("DefaultCompactUnitFrameSetup", function(frame)
 	end
 end)
 
+-- TODO: CLEANUP
+-- CompactUnitFrame_UpdateHealPrediction ?
+-- filter out nameplates etc if errors happen, or check only party, raid
+--local orig_CompactUnitFrameUtil_UpdateFillBar = CompactUnitFrameUtil_UpdateFillBar
+--[[
+CompactUnitFrameUtil_UpdateFillBar = function(frame, previousTexture, bar, amount, barOffsetXPercent)
+	if bar ~= nil then
+		local s = string.lower(bar:GetDebugName())
+		local precheck1, _ = string.find(s, "nameplate", 0, true)
+		if precheck1 ~= nil then
+			--devp("bar: " .. s)
+		end
+	end
+	if frame.overAbsorbGlow then
+		frame.overAbsorbGlow:Hide()
+	end
+	local totalWidth, totalHeight = frame.healthBar:GetSize();
+
+	local s1, _ = string.find(bar:GetDebugName(), "otalAbsorb", -10, true)
+	local s = false
+	if s1 ~= nil then s = true end
+	if s then
+		amount = UnitGetTotalAbsorbs(frame.displayedUnit) or 0;
+	end
+	if (totalWidth == 0 or amount == 0) then
+		bar:Hide();
+		if (bar.overlay) then
+			bar.overlay:Hide();
+		end
+		return previousTexture;
+	end
+
+	local barOffsetX = 0;
+	if (barOffsetXPercent) then
+		barOffsetX = totalWidth * barOffsetXPercent;
+	end
+
+	if s then
+		bar:SetPoint("TOPLEFT", frame, "TOPLEFT");
+		bar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT");
+	else
+		bar:SetPoint("TOPLEFT", previousTexture, "TOPRIGHT", barOffsetX, 0);
+		bar:SetPoint("BOTTOMLEFT", previousTexture, "BOTTOMRIGHT", barOffsetX, 0);
+	end
+	local _, totalMax = frame.healthBar:GetMinMaxValues();
+
+	local barSize = (amount / totalMax) * totalWidth;
+	bar:SetWidth(barSize);
+	bar:Show();
+	if (bar.overlay) then
+		bar.overlay:SetTexCoord(0, barSize / bar.overlay.tileSize, 0, totalHeight / bar.overlay.tileSize);
+		bar.overlay:Show();
+	end
+	return bar;
+end
+]]
+-- leaving this here in case if i end up regretting or fumbling
+
+hooksecurefunc("CompactUnitFrameUtil_UpdateFillBar", function(frame, previousTexture, bar, amount, barOffsetXPercent)
+		if frame.overAbsorbGlow then
+			frame.overAbsorbGlow:Hide()
+		end
+
+		local totalWidth, totalHeight = frame.healthBar:GetSize();
+
+		local s1, _ = string.find(bar:GetDebugName(), "otalAbsorb", -10, true)
+		local s = false
+		if s1 ~= nil then s = true end
+		if s then
+			amount = UnitGetTotalAbsorbs(frame.displayedUnit) or 0;
+		end
+		if (totalWidth == 0 or amount == 0) then
+			bar:Hide();
+			if (bar.overlay) then
+				bar.overlay:Hide();
+			end
+			return previousTexture;
+		end
+
+		local barOffsetX = 0;
+		if (barOffsetXPercent) then
+			barOffsetX = totalWidth * barOffsetXPercent;
+		end
+
+		if s then
+			bar:SetPoint("TOPLEFT", frame, "TOPLEFT");
+			bar:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT");
+		else
+			bar:SetPoint("TOPLEFT", previousTexture, "TOPRIGHT", barOffsetX, 0);
+			bar:SetPoint("BOTTOMLEFT", previousTexture, "BOTTOMRIGHT", barOffsetX, 0);
+		end
+		local _, totalMax = frame.healthBar:GetMinMaxValues();
+
+		local barSize = (amount / totalMax) * totalWidth;
+		bar:SetWidth(barSize);
+		bar:Show();
+		if (bar.overlay) then
+			bar.overlay:SetTexCoord(0, barSize / bar.overlay.tileSize, 0, totalHeight / bar.overlay.tileSize);
+			bar.overlay:Show();
+		end
+		return bar;
+end)
+
+-- CHRIST
 SLASH_JAUHUDOPT1 = "/jhud"
 function SlashCmdList.JAUHUDOPT()
 	JAUHUD_optf:Toggle()
 end
+
 --SlashCmdList["SLASH_JAUHUDOPT"] = JAUHUD_optf:Toggle()

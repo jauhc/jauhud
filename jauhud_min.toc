@@ -1,6 +1,6 @@
-## Interface: 110100
+## Interface: 115100
 ## Category: !Personal
-## Version: 0.2.1
+## Version: 0.3.0
 ## Title: jauhud_min
 ## Notes: Personal project to lighten WeakAuras bloat
 ## Author: Jauho#21216

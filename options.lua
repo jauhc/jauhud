@@ -11,7 +11,8 @@ local custom_backdrop = {
 
 JAUHUD_optf = CreateFrame("Frame", nil, UIParent, "BackdropTemplate")
 JAUHUD_optf:SetPoint("CENTER")
-JAUHUD_optf:SetSize(200,200)
+local win_width = 250
+JAUHUD_optf:SetSize(win_width,200)
 JAUHUD_optf:SetBackdrop(custom_backdrop) --Blizzard_SharedXML/Backdrop.lua
 JAUHUD_optf:Hide()
 --[[
@@ -36,16 +37,31 @@ function JAUHUD.create_options()
     local togl_bars = CreateFrame("CheckButton", nil, JAUHUD_optf, "ChatConfigCheckButtonTemplate")
     togl_bars:SetPoint("TOPLEFT", 10, -5)
     togl_bars.Text:SetText("Solid health bars")
-    if JauhudDB.compact_bars then
+    if JauhudDB.compact_bars then -- no heckin clue why i named it this but here we are
         togl_bars:SetChecked(true)
     end
     togl_bars:HookScript("OnClick", function(self)
         JauhudDB.compact_bars = self:GetChecked()
+        CompactPartyFrame:RefreshMembers() -- works
     end)
+    local pframe = togl_bars
     table.insert(opt_list, togl_bars) -- add ref to table to count for size
 
+    --[[
+    local togl_absorbs = CreateFrame("CheckButton", nil, pframe, "ChatConfigCheckButtonTemplate")
+    togl_absorbs:SetPoint("TOPLEFT", 0, -20)
+    togl_absorbs.Text:SetText("Alt absorbs (overlay when full)")
+    if JauhudDB.alt_absorb then
+        togl_absorbs:SetChecked(true)
+    end
+    togl_absorbs:HookScript("OnClick", function(self)
+        JauhudDB.alt_absorb = self:GetChecked()
+    end)
+    pframe = togl_absorbs
+    table.insert(opt_list, togl_absorbs) -- add ref to table to count for size
+]]
 
-    local togl_tooltip = CreateFrame("CheckButton", nil, togl_bars, "ChatConfigCheckButtonTemplate")
+    local togl_tooltip = CreateFrame("CheckButton", nil, pframe, "ChatConfigCheckButtonTemplate")
     togl_tooltip:SetPoint("TOPLEFT", 0, -20)
     togl_tooltip.Text:SetText("Cleaner tooltips")
     if JauhudDB.cleaner_tooltips then
@@ -54,10 +70,11 @@ function JAUHUD.create_options()
     togl_tooltip:HookScript("OnClick", function(self)
         JauhudDB.cleaner_tooltips = self:GetChecked()
     end)
+    pframe = togl_tooltip
     table.insert(opt_list, togl_tooltip) -- add ref to table to count for size
 
 
-    local togl_chat = CreateFrame("CheckButton", nil, togl_tooltip, "ChatConfigCheckButtonTemplate")
+    local togl_chat = CreateFrame("CheckButton", nil, pframe, "ChatConfigCheckButtonTemplate")
     togl_chat:SetPoint("TOPLEFT", 0, -20)
     togl_chat.Text:SetText("Cleaner chat frame")
     if JauhudDB.cleaner_chat then
@@ -66,10 +83,11 @@ function JAUHUD.create_options()
     togl_chat:HookScript("OnClick", function(self)
         JauhudDB.cleaner_chat = self:GetChecked()
     end)
+    pframe = togl_chat
     table.insert(opt_list, togl_chat) -- add ref to table to count for size
 
 
-    local togl_playerframe = CreateFrame("CheckButton", nil, togl_chat, "ChatConfigCheckButtonTemplate")
+    local togl_playerframe = CreateFrame("CheckButton", nil, pframe, "ChatConfigCheckButtonTemplate")
     togl_playerframe:SetPoint("TOPLEFT", 0, -20)
     togl_playerframe.Text:SetText("Alt. player frame")
     if JauhudDB.alt_playerframe then
@@ -78,6 +96,7 @@ function JAUHUD.create_options()
     togl_playerframe:HookScript("OnClick", function(self)
         JauhudDB.alt_playerframe = self:GetChecked()
     end)
+    pframe = togl_playerframe
     table.insert(opt_list, togl_playerframe) -- add ref to table to count for size
 
     --
@@ -88,10 +107,10 @@ function JAUHUD.create_options()
     btnClose:SetText("Close /jhud")
     btnClose:SetScript("OnMouseDown", function(self)
         JAUHUD_optf:Hide()
-        JAUHUD.devp("Remember to /reload")
+        --JAUHUD.devp("Remember to /reload")
     end)
 
 
     -- borders are 4 (+ 5 for margins), text is roughly 25, + close button
-    JAUHUD_optf:SetSize(200, (#opt_list * 30) + 50)
+    JAUHUD_optf:SetSize(win_width, (#opt_list * 30) + 50)
 end
