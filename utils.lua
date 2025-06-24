@@ -9,7 +9,8 @@ local function pWarn(s) return _warn .. s .. _clear end
 local function pError(s) return _error .. s .. _clear end
 local function devPrint(s, n)
 	local str = s
-	if type(n) == "number" then 
+	if str == nil then str = "attempted to print nil!" end
+	if type(n) == "number" then
 		if n > 0 then
 			for i = 2, n, 1 do
 				str = str .." ".. s
@@ -19,17 +20,25 @@ local function devPrint(s, n)
 	print(_info .. "jauhud:|r " .. str)
 end
 
-ownName, JAUHUD = ...
-JAUHUD.print = pInfo
-JAUHUD.warn = pWarn
-JAUHUD.error = pError
-JAUHUD.devp = devPrint
+ownName, JH = ...
+--JH = JH or {}
+JH.loaded = {}
+JH.print = pInfo
+JH.warn = pWarn
+JH.error = pError
+JH.devp = devPrint
 
-JauhudDB = JauhudDB or {}
---
+function JH_Specstuff()
+	if true then return end -- because i removed cooldownmanager stuff
+	local myClass, myClassId = UnitClassBase("player") -- i.e. EVOKER, 13
+	local mySpecId = GetSpecialization() -- returns simple index 1-3 or so
+	local realSpecId = GetSpecializationInfoForClassID(myClassId, mySpecId)
+	local heroTalents = C_ClassTalents.GetActiveHeroTalentSpec() or 0
+	return realSpecId, heroTalents
+end
 
 -- Purpose of this is to avoid the checks and _G shit
-local function JAUHUD_HIDE(f, t, giga)
+local function JH_HIDE(f, t, giga)
 	if f then
 		if t == true then
 			f:Show()
@@ -38,15 +47,15 @@ local function JAUHUD_HIDE(f, t, giga)
 			f:Hide()
 		end
 	else
-		JAUHUD.error("tried to modify a frame that could not be found: " .. tostring(f))
+		JH.error("tried to modify a frame that could not be found: " .. tostring(f))
 	end
 end
-JAUHUD.hide = JAUHUD_HIDE
+JH.hide = JH_HIDE
 
-local function JAUHUD_LASTWORD(s)
+local function JH_LASTWORD(s)
 	return s:match("([^%.]+)$")
 end
-JAUHUD.lastword = JAUHUD_LASTWORD
+JH.lastword = JH_LASTWORD
 
 function PrintTable(t, indent)
 	assert(type(t) == "table", "PrintTable() called for non-table!")
@@ -85,7 +94,7 @@ local function doBrightness(c, b)
 	return f --{ red, green, blue }
 end
 
-function JAUHUD_ClassColorRGB(_class, ffxiv)
+function JH_ClassColorRGB(_class, ffxiv)
 	local _role_colors = { ffxiv = { dps = { 106, 45, 43 }, healer = { 64, 101, 45 }, tank = { 49, 58, 124 } }, solid = { dps = { 255, 0, 0 }, healer = { 0, 255, 0 }, tank = { 0, 0, 255 } } }
 	local c = {}
 	if ffxiv then c = _role_colors.ffxiv else c = _role_colors.solid end
@@ -107,29 +116,29 @@ function JAUHUD_ClassColorRGB(_class, ffxiv)
 	end
 end
 
-local function JAUHUD_GETHP(u)
+local function JH_GETHP(u)
 	if u then
 		return UnitHealth(u)
 	end
 	return UnitHealth("player")
 end
-JAUHUD.hp = JAUHUD_GETHP
-local function JAUHUD_GETMAXHP(u)
+JH.hp = JH_GETHP
+local function JH_GETMAXHP(u)
 	if u then
 		return UnitHealthMax(u)
 	end
 	return UnitHealthMax("player")
 end
-JAUHUD.maxhp = JAUHUD_GETMAXHP
-local function JAUHUD_GETHPP(u)
+JH.maxhp = JH_GETMAXHP
+local function JH_GETHPP(u)
 	if u then
 		return (UnitHealth(u) / UnitHealthMax(u)) * 100
 	end
 	return (UnitHealth("player") / UnitHealthMax("player")) * 100
 end
-JAUHUD.hpp = JAUHUD_GETHPP
+JH.hpp = JH_GETHPP
 
-local function JAUHUD_gradient(hp, c)
+local function JH_gradient(hp, c)
 	if hp < 0 then return end
 	local c1 = { 1.0, 0, 0 }
 	local c2 = C_ClassColor.GetClassColor(UnitClassBase("player"))
@@ -140,33 +149,26 @@ local function JAUHUD_gradient(hp, c)
 	local blu = c1[3] * (1 - t) + c2.b * t
 	return { r = red, g = gre, b = blu }
 end
-JAUHUD.grad = JAUHUD_gradient
+JH.grad = JH_gradient
 
-local function JAUHUD_classicgradient(hp) -- hp is %
+local function JH_classicgradient(hp) -- hp is %
 	hp = math.floor((hp / 100) * 255)
 	local red = 255 - hp
 	local gre = hp
 	return { r = red, g = gre, b = 0 }
 end
-JAUHUD.gradc = JAUHUD_classicgradient
---[[
+JH.gradc = JH_classicgradient
 
-local function OnEvent(self, event, ...)
-	if event == "ADDON_LOADED" then
-		local addOnName = ...
-		print(event, addOnName)
-	elseif event == "PLAYER_ENTERING_WORLD" then
-		local isLogin, isReload = ...
-		print(event, isLogin, isReload)
-	elseif event == "CHAT_MSG_CHANNEL" then
-		local text, playerName, _, channelName = ...
-		print(event, text, playerName, channelName)
+
+local function JH_tableswap(table, pos1, pos2)
+	table[pos1], table[pos2] = table[pos2], table[pos1]
+	return table
+end
+JH.swptbl = JH_tableswap
+
+local function JH_clearTable(t)
+	for k in pairs(t) do
+		t[k] = nil
 	end
 end
-
-local f = CreateFrame("Frame")
-f:RegisterEvent("ADDON_LOADED")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:RegisterEvent("CHAT_MSG_CHANNEL")
-f:SetScript("OnEvent", OnEvent)
-]]
+JH.cleartbl = JH_clearTable

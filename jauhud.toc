@@ -1,0 +1,22 @@
+## Interface: 110107
+
+## Category: !Personal
+## Version: 0.1.0
+## Title: jauhud
+## Notes: Personal project to lighten WeakAuras bloat (v2)
+## Author: Jauho#21216
+
+## SavedVariables: JHudDB
+## LoadSavedVariablesFirst: 1
+
+## IconTexture: interface/icons/garrison_building_menagerie
+## DefaultState: disabled
+
+# needs plater for textures
+## Dependencies: Plater
+
+# utility stuff, no way!!
+utils.lua
+
+# main!! file!!!
+core.lua
