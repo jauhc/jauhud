@@ -174,7 +174,7 @@ local function AdjustButtonSpacingAndZoom(prefix)
 			btn.IconMask:SetTexture("Interface/CHARACTERFRAME/TempPortraitAlphaMask", "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
             btn:ClearNormalTexture() -- yeet the borders
 			if prefix ~= "PetAction" then -- pet icons are already tight
-				btn:SetScale(1)
+				--btn:SetScale(1)
 				local cd = _G[prefix.."Button"..i.."Cooldown"]
 				if cd ~= nil then
 					cd:SetAllPoints(btn)
